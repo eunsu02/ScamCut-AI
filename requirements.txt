@@ -4,3 +4,7 @@ torch
 torchvision
 python-multipart
 pillow
+yt-dlp          # 유튜브 영상 다운로드 (가장 업데이트가 빠름)
+opencv-python   # 영상 프레임 추출 및 처리
+mediapipe       # 얼굴 영역만 정교하게 잘라내기 (Face Detection)
+timm
