@@ -12,29 +12,50 @@ face_cascade = cv2.CascadeClassifier(
 
 
 def process_youtube_video(url: str):
-    # 1. 유튜브 영상 다운로드 (최저 화질로 빠르게)
-    ydl_opts = {"format": "worst", "outtmpl": "temp_video.mp4", "quiet": True}
+
+    ydl_opts = {
+        "format": "best[ext=mp4][height<=480]/worst",
+        "outtmpl": "temp_video.mp4",
+        "quiet": True,
+    }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         ydl.download([url])
 
-    # 2. 영상에서 프레임 추출 (중간 프레임 1개만 예시로)
     cap = cv2.VideoCapture("temp_video.mp4")
-    cap.set(cv2.CAP_PROP_POS_FRAMES, int(cap.get(cv2.CAP_PROP_FRAME_COUNT) / 2))
+    fps = cap.get(cv2.CAP_PROP_FPS)
+
+    target_frame = int(fps * 6) if fps > 0 else 180
+    cap.set(cv2.CAP_PROP_POS_FRAMES, target_frame)
+
     ret, frame = cap.read()
     cap.release()
-    os.remove("temp_video.mp4")  # 임시 파일 삭제
+    if os.path.exists("temp_video.mp4"):
+        os.remove("temp_video.mp4")
 
     if not ret:
         return None
 
-    # 3. 얼굴 영역 Crop
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    faces = face_cascade.detectMultiScale(gray, 1.1, 4)
+    faces = face_cascade.detectMultiScale(gray, 1.1, 4, minSize=(100, 100))
+
     if len(faces) == 0:
         return None
 
-    (x, y, w, h) = faces[0]
-    return frame[y : y + h, x : x + w]
+    (x, y, w, h) = sorted(faces, key=lambda f: f[2] * f[3], reverse=True)[0]
+
+    pad_w = int(w * 0.5)
+    pad_h = int(h * 0.5)
+
+    img_h, img_w = frame.shape[:2]
+    y1 = max(0, y - pad_h)
+    y2 = min(img_h, y + h + pad_h)
+    x1 = max(0, x - pad_w)
+    x2 = min(img_w, x + w + pad_w)
+
+    face_img = frame[y1:y2, x1:x2]
+
+    face_img_rgb = cv2.cvtColor(face_img, cv2.COLOR_BGR2RGB)
+    return face_img_rgb
 
 
 # 유튜브 ID를 받아 자막 가져오는 함수
