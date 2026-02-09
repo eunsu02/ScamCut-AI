@@ -7,7 +7,7 @@
         /* 1. 기본 레이아웃 및 폰트 설정 */
         body { margin: 0; padding: 0; display: flex; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; height: 100vh; background: #ffffff; overflow: hidden; color: #1d1d1f; }
         
-        .main-content { flex: 1; display: flex; align-items: center; justify-content: center; border-right: 1px solid #f2f2f7; height: 100vh; padding: 40px; box-sizing: border-box; overflow-y: auto; }
+        .main-content { flex: 1; display: flex; align-items: flex-start; justify-content: center; border-right: 1px solid #f2f2f7; height: 100vh; padding: 60px 40px; box-sizing: border-box; overflow-y: auto; }
         .analysis-wrapper { display: flex; flex-direction: row; align-items: flex-start; justify-content: center; width: 100%; max-width: 1200px; transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1); }
 
         .input-container { width: 520px; flex-shrink: 0; display: flex; flex-direction: column; }
@@ -47,11 +47,10 @@
             background: #ffffff;
         }
         
-        .result-active #resultCard { width: 500px; opacity: 1; visibility: visible; padding: 40px; margin-left: 40px; box-shadow: 0 10px 40px rgba(0,0,0,0.03); }
+        .result-active #resultCard { width: 500px; opacity: 1; visibility: visible; padding: 40px; margin-left: 40px; box-shadow: 0 10px 40px rgba(0,0,0,0.03); margin-bottom: 60px; }
 
         #resTitle { font-weight: 900; font-size: 32px; margin-bottom: 10px; letter-spacing: -1.5px; }
         
-        /* 안내 문구 스타일: 줄 바꿈 허용 */
         #cautionNotice { font-size: 15px; font-weight: 700; margin-bottom: 25px; line-height: 1.6; padding: 16px; border-radius: 8px; display: none; }
 
         .score-label { font-size: 15px; font-weight: 700; color: #86868b; margin-bottom: 12px; display: block; }
@@ -61,8 +60,8 @@
 
         #resReasons { font-size: 16px; line-height: 2.0; border-top: 1.5px solid rgba(0,0,0,0.05); padding-top: 30px; margin-top: 30px; color: #3a3a3c; }
         
-        .detected-text-box { background: rgba(255,255,255,0.6); padding: 18px; border-radius: 10px; font-size: 14.5px; line-height: 1.7; border: 1px solid rgba(0,0,0,0.03); margin-top: 10px; color: #1d1d1f; }
-        .reason-tag { display: inline-block; padding: 4px 10px; border-radius: 6px; font-weight: 800; font-size: 13px; margin-right: 8px; color: #1d1d1f; }
+        .detected-text-box { background: rgba(255,255,255,0.6); padding: 18px; border-radius: 10px; font-size: 14.5px; line-height: 1.7; border: 1px solid rgba(0,0,0,0.03); color: #1d1d1f; }
+        .reason-tag { display: inline-block; padding: 4px 10px; border-radius: 6px; font-weight: 800; font-size: 13px; margin-right: 8px; color: #1d1d1f; margin-bottom: 4px; }
 
         /* 4. 피드 아이템 복구 */
         .feed-card { background: #fff; padding: 15px; border-radius: 12px; margin-bottom: 12px; border: 1px solid #efeff4; display: flex; gap: 12px; cursor: pointer; align-items: center; }
@@ -171,7 +170,6 @@
             document.querySelectorAll('button').forEach(b => b.disabled = true);
         }
 
-        // 문장 줄 바꿈이 적용된 결과 렌더링 함수
         function showResult(title, probLabel, probValue, scams) {
             const wrapper = document.getElementById('analysisWrapper');
             const card = document.getElementById('resultCard');
@@ -190,7 +188,6 @@
             document.getElementById('resTitle').innerText = title;
             document.getElementById('resTitle').style.color = themeColor;
             
-            //  줄 바꿈 메시지 적용 (innerHTML 사용)
             if (isWarning || isDanger) {
                 notice.style.display = 'block';
                 notice.style.background = noticeBg;
@@ -210,13 +207,13 @@
             let reasonHtml = "";
             if(scams && scams.length > 0) {
                 scams.forEach(s => {
+                    let tagsHtml = "";
                     if(s.reason && s.reason.length > 0) {
                         s.reason.forEach(r => {
-                            reasonHtml += `<div style="margin-bottom:12px;"><span class="reason-tag" style="background:${tagBgColor}; color:${themeColor}">${r.keyword}</span> ${r.description}</div>`;
+                            tagsHtml += `<span class="reason-tag" style="background:${tagBgColor}; color:${themeColor}">${r.keyword}</span> ${r.description}<br>`;
                         });
                     }
-                    // 탐지된 텍스트 본문 강조 (주의 권고 포함)
-                    reasonHtml += `<div style="margin-top:20px;"><small style="opacity:0.6; font-weight:700;">분석된 주의 텍스트:</small><div class="detected-text-box">${s.text}</div></div>`;
+                    reasonHtml += `<div style="margin-bottom:10px;">${tagsHtml}<small style="opacity:0.6; font-weight:700;">분석된 주의 텍스트:</small><div class="detected-text-box">${s.text}</div></div></div>`;
                 });
             }
             document.getElementById('resReasons').innerHTML = reasonHtml;
